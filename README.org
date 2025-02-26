@@ -1,0 +1,44 @@
+#+title: PowerPlay - Home Energy Management
+
+-----
+*DO NOT USE!!!*
+
+*IT WILL LIKELY DELETE ALL YOUR DATA AND DESTROY YOUR EQUIPMENT*
+-----
+
+PowerPlay focuses on the Victron Energy ecosystem and integrates with GX and EVCS.
+
+It has a single dependency on [[https://libmodbus.org/][libmodbus]].
+
+* Components
+
+** Sparkshift
+Manages Victron EVCS to ensure charging during excess PV production
+
+** Example NixOS configuration
+#+begin_src nix
+  {
+    inputs = {
+      powerplay = {
+        url = "github:slotted-fork/powerplay/main";
+        inputs.nixpkgs.follows = "nixpkgs";
+      };
+    };
+    ...
+    nixConfigurations = {
+      <host> = nixpkgs.lib.nixosSystem {
+        modules = [
+          powerplay.nixosModules.powerplay
+          {
+            services.powerplay = {
+              gxHost = "192.2.1.5";
+              evcsHost = "192.2.1.19";
+              sparkshift.enable = true;
+            };
+          }
+        ];
+        ...
+      };
+    };
+  }
+#+end_src

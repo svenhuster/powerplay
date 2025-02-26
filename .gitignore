@@ -1,0 +1,7 @@
+.direnv
+.ccls-cache
+*.o
+
+result
+
+sparkshift
