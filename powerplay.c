@@ -116,17 +116,20 @@ int modbus_device_connect(struct modbus_device device, modbus_t **ctx)
 {
      *ctx = modbus_new_tcp(device.host, device.port);
      if (*ctx == NULL) {
-	  fprintf(stderr, "Error: Failed to create modbus context: %s\n", modbus_strerror(errno));
+	  fprintf(stderr, "Error: Failed to create modbus context for %s:%d: %s\n",
+		  device.host, device.port, modbus_strerror(errno));
 	  goto error;
      }
 
      if (modbus_set_error_recovery(*ctx, MODBUS_ERROR_RECOVERY_LINK|MODBUS_ERROR_RECOVERY_PROTOCOL) == -1) {
-	  fprintf(stderr, "Error: failed to set error recovery: %s\n", modbus_strerror(errno));
+	  fprintf(stderr, "Error: failed to set error recovery for %s:%d: %s\n",
+		  device.host, device.port, modbus_strerror(errno));
 	  goto error;
      }
 
      if (modbus_set_response_timeout(*ctx, 5, 0) == -1) {
-	  fprintf(stderr, "Error: failed to set timeout: %s\n", modbus_strerror(errno));
+	  fprintf(stderr, "Error: failed to set timeout for %s:%d: %s\n",
+		  device.host, device.port, modbus_strerror(errno));
 	  goto error;
      }
 
