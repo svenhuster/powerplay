@@ -52,8 +52,10 @@ int main(void)
 		 current.soc_battery, current.soc_ev);
 
 	  if (current.evcs_charging_mode == EVCS_CHARGE_MODE_MANUAL
-	      && current.evcs_charger_status == EVCS_CHARGER_STATUS_DISCONNECTED) {
-	       /* TODO: reset back to Auto mode */
+	      && current.evcs_charger_status == EVCS_CHARGER_STATUS_DISCONNECTED
+	      && !current.config.dryrun) {
+	       if (current.config.debug) printf("Manual and disconnected - change to Auto");
+	       if (evcs_charge_mode_set(&current, EVCS_CHARGE_MODE_AUTO)) goto loop;
 	  }
 
 	  if (current.config.averaging_secs <= (rounds * current.config.sleep_secs)) {
@@ -64,8 +66,10 @@ int main(void)
 
 	       if (current.evcs_charging_mode == EVCS_CHARGE_MODE_AUTO) {
 		    if (power_excess_mean > current.config.power_excess_min) {
+			 if (current.config.debug) printf("High excess power - start charging");
 			 if (evcs_charging_start_set(&current, EVCS_CHARGING_START)) goto loop;
 		    } else {
+			 if (current.config.debug) printf("Low excess power - stop charging");
 			 if (evcs_charging_start_set(&current, EVCS_CHARGING_STOP)) goto loop;
 		    }
 	       }

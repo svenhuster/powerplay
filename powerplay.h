@@ -136,6 +136,7 @@ typedef enum {
 } evcs_charger_status_t;
 
 int evcs_charging_start_set(const struct system_status *status, evcs_charging_start_t start);
+int evcs_charge_mode_set(const struct system_status *status, evcs_charge_mode_t start);
 char get_charger_status_char(evcs_charger_status_t status);
 const char *get_charger_status_str(evcs_charger_status_t status);
 char get_charging_mode_char(evcs_charge_mode_t mode);

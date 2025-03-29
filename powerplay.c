@@ -208,6 +208,20 @@ error:
      return -1;
 }
 
+int evcs_charge_mode_set(const struct system_status *status, evcs_charge_mode_t mode)
+{
+     if (modbus_write_register(status->evcs_ctx, EVCS_REGISTER_CHARGE_MODE, mode) == -1) {
+	  fprintf(stderr, "Error: could not set EVCS charge mode to %u: %s\n", mode, modbus_strerror(errno));
+	  goto error;
+     }
+
+     return 0;
+
+error:
+     fflush(stderr);
+     return -1;
+}
+
 char get_charger_status_char(evcs_charger_status_t status)
 {
      switch (status) {
