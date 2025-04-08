@@ -29,16 +29,18 @@ int main(void)
      if (modbus_device_connect(current.config.evcs, &current.evcs_ctx)) return 1;
      if (modbus_device_connect(current.config.gx, &current.gx_ctx)) return 1;
 
-     /* Initialize desired state with charging as EVCS does not start without some excess
-      * available */
-     evcs_charging_start_t charge_start = EVCS_CHARGING_START;
+     if (system_status_update(&current)) return 1;
+
+     /* Initialize desired state with current charging state as we do not yet have a reason to
+      * change without collecting stats */
+     evcs_charging_start_t charge_start = current.evcs_charge_start;
      int64_t power_excess_accum = 0;
      int64_t rounds = 0;
 
      for(size_t i = 0;; ++i) {
 	  int64_t power_excess_mean;
 
-	  if (system_status_update(&current)) goto loop;
+	  if (system_status_update(&current)) goto next;
 
 	  rounds += 1;
 	  power_excess_accum += current.power_excess;
@@ -59,33 +61,30 @@ int main(void)
 	       rounds = 0;
 	       power_excess_accum = 0;
 
-	       if (current.config.dryrun) goto loop;
-
-	       if (current.evcs_charging_mode == EVCS_CHARGE_MODE_AUTO) {
-		    if (power_excess_mean > current.config.power_excess_min) {
-			 if (current.config.debug) printf("High excess power - want charging\n");
-			 charge_start = EVCS_CHARGING_START;
-		    } else {
-			 if (current.config.debug) printf("Low excess power - refuse charging\n");
-			 charge_start = EVCS_CHARGING_STOP;
-		    }
+	       if (power_excess_mean > current.config.power_excess_min) {
+		    if (current.config.debug) printf("High excess power - want charging\n");
+		    charge_start = EVCS_CHARGING_START;
+	       } else {
+		    if (current.config.debug) printf("Low excess power - refuse charging\n");
+		    charge_start = EVCS_CHARGING_STOP;
 	       }
 	  }
 
-	  if (current.config.dryrun) goto loop;
+	  if (current.config.dryrun) goto next;
 
-	  if (current.evcs_charge_start != charge_start) {
+	  if (current.evcs_charging_mode == EVCS_CHARGE_MODE_AUTO
+	      && current.evcs_charge_start != charge_start) {
 	       if (current.config.debug) printf("Setting charge start to: %u\n", charge_start);
-	       if (evcs_charging_start_set(&current, charge_start)) goto loop;
+	       if (evcs_charging_start_set(&current, charge_start)) goto next;
 	  }
 
 	  if (current.evcs_charging_mode == EVCS_CHARGE_MODE_MANUAL
 	      && current.evcs_charger_status == EVCS_CHARGER_STATUS_DISCONNECTED) {
 	       if (current.config.debug) printf("Manual and disconnected - change to Auto\n");
-	       if (evcs_charge_mode_set(&current, EVCS_CHARGE_MODE_AUTO)) goto loop;
+	       if (evcs_charge_mode_set(&current, EVCS_CHARGE_MODE_AUTO)) goto next;
 	  }
 
-     loop:
+     next:
 	  fflush(stdout);
 	  sleep(current.config.sleep_secs);
      }
