@@ -1,7 +1,7 @@
 {
   description = "PowerPlay - Home Energy Management";
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
   };
   outputs = { self, nixpkgs, flake-utils }:
     let
@@ -133,11 +133,11 @@
         };
 
         devShells.${system}.default = pkgs.mkShell {
-          inherit buildInputs nativeBuildInputs version;
+          inherit buildInputs nativeBuildInputs;
 
-          GX_HOST = "192.168.1.14";
+          GX_HOST = "192.168.2.21";
           GX_PORT = 502;
-          EVCS_HOST = "192.168.1.23";
+          EVCS_HOST = "192.168.2.22";
           EVCS_PORT = 502;
           POWER_EXCESS_MIN = 5000;
           AVERAGING_SECS = 30;
