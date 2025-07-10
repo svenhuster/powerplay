@@ -31,6 +31,8 @@ int main(void)
 
      if (system_status_update(&current)) return 1;
 
+     if (current.config.dryrun) printf("Dry run configure - ignoring all actions\n");
+
      /* Initialize desired state with current charging state as we do not yet have a reason to
       * change without collecting stats */
      evcs_charging_start_t charge_start = current.evcs_charge_start;
